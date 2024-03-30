@@ -19,14 +19,17 @@ app_api_key = os.getenv("x-api-key")
 @app.errorhandler(404)
 def page_not_found(error):
     # You can customize the response here
-    return jsonify({"message": "Data you are looking for cannot be found"})
+    return jsonify({"message": "Data you are looking for cannot be found: {}".format(error)})
 
 
 @app.errorhandler(500)
-def page_not_found(error):
+def server_error(error):
     # You can customize the response here
-    return jsonify({"message": "Server issue"}), 500
+    return jsonify({"message": f"Server issue: {error}"}), 500
 
+@app.errorhandler(415)
+def bad_content_type(error):
+    return jsonify({"message": f"Unsupported content-type: {error}"}), 415
 
 @app.route("/api/user", methods=HTTP_METHODS)
 @protected
