@@ -9,6 +9,7 @@ load_dotenv()
 base_url = os.getenv("BASE_URL")
 
 class Users(BaseModel):
+    fullname = db.Column(db.String(50), nullable=False)
     email = db.Column(db.String(120), index=True, unique=True)
     username = db.Column(db.String(120), index=True, unique=True)
     bio = db.Column(db.String(500), default="")
