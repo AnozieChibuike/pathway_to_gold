@@ -6,7 +6,7 @@ import os
 load_dotenv()
 
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
-SECRET_KEY = None
+SECRET_KEY = os.getenv("FLASK_SECRET",None)
 
 if not SECRET_KEY:
     raise NotImplementedError(

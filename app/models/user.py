@@ -13,6 +13,7 @@ class Users(BaseModel):
     email = db.Column(db.String(120), index=True, unique=True)
     username = db.Column(db.String(120), index=True, unique=True)
     bio = db.Column(db.String(500), default="")
+    phone = db.Column(db.String(11), nullable=False, unique=True)
     password_hash = db.Column(db.String(1024))
     image_url = db.Column(db.String(500))
     email_verified = db.Column(db.Boolean, default=False)

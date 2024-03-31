@@ -67,11 +67,14 @@ class BaseModel(db.Model):
         """
         id = kwargs.get('id')
         email = kwargs.get('email')
-        username = kwargs.get('username') 
+        username = kwargs.get('username')
+        phone = kwargs.get('phone') 
         if id:
             return cls.query.get(id)
         if email:
             return cls.query.filter_by(email=email).first()
         if username:
             return cls.query.filter_by(username=username).first()
+        if phone:
+            return cls.query.filter_by(phone=phone).first()
         

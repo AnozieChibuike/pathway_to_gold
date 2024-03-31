@@ -1,35 +1,19 @@
+""""
+    User Management
+"""
+
 from flask import request, jsonify
 from app.models.user import Users
 from app import app
 import os
 
 from lib.utils.protection import protected
+from lib.methods import HTTP_METHODS
 
 
-HTTP_METHODS = [
-    "GET",
-    "POST",
-    "PUT",
-    "DELETE",
-]
 
 app_api_key = os.getenv("x-api-key")
 
-
-@app.errorhandler(404)
-def page_not_found(error):
-    # You can customize the response here
-    return jsonify({"message": "Data you are looking for cannot be found: {}".format(error)})
-
-
-@app.errorhandler(500)
-def server_error(error):
-    # You can customize the response here
-    return jsonify({"message": f"Server issue: {error}"}), 500
-
-@app.errorhandler(415)
-def bad_content_type(error):
-    return jsonify({"message": f"Unsupported content-type: {error}"}), 415
 
 @app.route("/api/user", methods=HTTP_METHODS)
 @protected
@@ -71,6 +55,7 @@ def user():
             fullname = body["fullname"]
             email = body["email"]
             password = body["password"]
+            phone = body['phone']
             username = body.get("username")
             pin = body.get("pin")
 
@@ -82,8 +67,12 @@ def user():
                 message = f"User exists with supplied username"
                 data = {"message": message, "data": {}, "status": "error"}
                 return jsonify(data), 406
+            if Users.get(phone=phone):
+                message = f"User exists with supplied Phone number"
+                data = {"message": message, "data": {}, "status": "error"}
+                return jsonify(data), 406
 
-            user = Users(fullname=fullname, email=email, username=username, pin=pin)
+            user = Users(fullname=fullname, email=email, username=username, pin=pin,phone=phone)
             user.set_password(password)
             user.save()
             message = f"User created successfully"
@@ -114,3 +103,4 @@ def user():
             return jsonify({"data": {}}), 404
         return jsonify({"data": user.to_dict()}), 200
     return jsonify(None), 200
+
