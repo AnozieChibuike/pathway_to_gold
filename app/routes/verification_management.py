@@ -32,4 +32,4 @@ def login():
         else:
             return jsonify({'message': "Incorrect password"}), 401
     except KeyError as e:
-        return jsonify({'message': str(e)}), 400
+        return jsonify({'message': str(e) + "required"}), 400

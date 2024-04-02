@@ -18,7 +18,7 @@ def generate_token(email: str, otp: str = None):
     payload = {
         "email": email,
         "otp": otp,
-        "exp": datetime.utcnow() + timedelta(seconds=10),  # Token expires in 1 hour
+        "exp": datetime.utcnow() + timedelta(minutes=10),  # Token expires in 10 minutes
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
