@@ -3,36 +3,35 @@ from app import app
 from lib.utils.tokens import *
 from lib.utils.mail import *
 import os
+import random
+from app.models.user import Users
+from lib.utils.protection import protected
 
 base_url = os.getenv("BASE_URL")
 
 
-@app.post("/api/send-mail")
+@app.post("/api/send-otp")
+@protected
 def send_email():
     data = request.json
     try:
-        recipients = data["recipients"]
-        if not isinstance(recipients, list):
-            jsonify({"message": "Recipients must be an array of emails"}), 400
+        email = data["email"]
     except:
-        return jsonify({"message": "Missing required data in body: email"}), 400
+        return jsonify({"error": "Missing required data in body: email"}), 400
 
-    subject = data.get("subject")  # Email subject
-    recipients = data.get("recipients")  # List of emails
-    reason = data.get("reason")  # email body
-    if reason.lower() == "magic_link":
-        total = []
-        not_sent = []
-        for email in recipients:
-            token = generate_token(email)
-            body = f"Here is your verification link : {base_url}/verify?token={token}\nExpires in 1 hour"
-            message, code, status = send_mail(subject, recipients, body)
-            if not status:
-                not_sent.append(email)
-            total.append(status)
-        if all(total):
-            return jsonify(message), code
-        else:
-            return jsonify(
-                {"message": "not all emails was sent", "email_not_sent": not_sent}
-            )
+    user = Users.get_or_404(email=email)
+    otp = random.randint(1000, 9999)
+    token = generate_token(email, otp)
+    user.otp_token = token
+    user.save()
+    
+    subject = data.get("subject") or "OTP code"  # Email subject
+    template = data.get("template")  # email body
+    email_body = f"Here is your otp: {otp} Expires in 10 minutes"
+    
+    message, code, status = send_mail(subject, email, body=email_body)
+    if not status:
+        data = {"message": message, "status": "pending"}, code    
+    else:
+        data = {"message": message, "status": "success"}, code
+    return jsonify(data), 200

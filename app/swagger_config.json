@@ -1,0 +1,177 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "description": "A collection of APIs for PathWay_TO_GOLD, verify identity with api key given to you by the developer BELOW",
+    "version": "1.0.0",
+    "title": "PATHWAY_TO_GOLD"
+  },
+  "securityDefinitions": {
+    "ApiKeyHeader": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-API-KEY"
+    }
+  },
+  "paths": {
+    "/api/user": {
+      "get": {
+        "tags": ["User Management"],
+        "summary": "Get user information by ID, email, or username.",
+        "security": [{ "ApiKeyHeader": [] }],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "email",
+            "required": false
+          },
+          {
+            "in": "query",
+            "name": "username",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": { "description": "User information retrieved successfully." },
+          "404": { "description": "User not found." },
+          "401": { "description": "Unauthorized." }
+        }
+      },
+      "post": {
+        "tags": ["User Management"],
+        "summary": "Create a new user.",
+        "security": [{ "ApiKeyHeader": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/CreateUserRequest" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "User created successfully." },
+          "406": {
+            "description": "User already exists or missing required fields."
+          },
+          "401": { "description": "Unauthorized." }
+        }
+      }
+    },
+    "/api/send-otp": {
+      "post": {
+        "tags": ["Mail Management"],
+        "summary": "Send an OTP to a user's email.",
+        "description": "This endpoint is protected and sends an OTP for email verification purposes.",
+        "security": [{ "ApiKeyHeader": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/SendOtpRequest" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OTP sent successfully." },
+          "400": { "description": "Missing required data in body: email." },
+          "401": { "description": "Unauthorized." }
+        }
+      }
+    },
+    "/api/verify-otp": {
+      "post": {
+        "tags": ["Verification Management"],
+        "summary": "Verify the OTP sent to a user.",
+        "security": [{ "ApiKeyHeader": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/VerifyOtpRequest" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OTP verification successful." },
+          "400": {
+            "description": "Invalid request format or missing required fields."
+          },
+          "401": { "description": "Unauthorized." }
+        }
+      }
+    },
+    "/api/login": {
+      "post": {
+        "tags": ["Verification Management"],
+        "summary": "Log in a user with email and password.",
+        "security": [{ "ApiKeyHeader": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/LoginRequest" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Login successful." },
+          "401": { "description": "Incorrect password." },
+          "400": {
+            "description": "Invalid request format or missing required fields."
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "SendOtpRequest": {
+      "type": "object",
+      "required": ["email"],
+      "properties": {
+        "email": { "type": "string" },
+        "subject": { "type": "string" },
+        "template": { "type": "string" }
+      }
+    },
+    "VerifyOtpRequest": {
+      "type": "object",
+      "required": ["email", "otp"],
+      "properties": {
+        "email": { "type": "string" },
+        "otp": { "type": "string" }
+      }
+    },
+    "GetRequest": {
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "username": { "type": "string" }
+      }
+    },
+    "LoginRequest": {
+      "type": "object",
+      "required": ["email", "password"],
+      "properties": {
+        "email": { "type": "string" },
+        "password": { "type": "string" }
+      }
+    },
+    "CreateUserRequest": {
+      "type": "object",
+      "required": ["fullname", "email", "password", "phone", "username"],
+      "properties": {
+        "fullname": { "type": "string" },
+        "email": { "type": "string" },
+        "password": { "type": "string" },
+        "phone": { "type": "string" },
+        "username": { "type": "string" }
+      }
+    }
+  }
+}

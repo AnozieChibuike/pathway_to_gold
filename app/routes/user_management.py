@@ -6,12 +6,13 @@ from flask import request, jsonify
 from app.models.user import Users
 from app import app
 import os
-
+from lib.utils.tokens import *
+from lib.utils.mail import *
 from lib.utils.protection import protected
 from lib.methods import HTTP_METHODS
+import random
 
-
-
+base_url = os.getenv("BASE_URL")
 app_api_key = os.getenv("x-api-key")
 
 
@@ -52,33 +53,7 @@ def user():
     if request.method == "POST":
         try:
             body = request.json
-            fullname = body["fullname"]
-            email = body["email"]
-            password = body["password"]
-            phone = body['phone']
-            username = body.get("username")
-            pin = body.get("pin")
-
-            if Users.get(email=email):
-                message = f"User exists with supplied email"
-                data = {"message": message, "data": {}, "status": "error"}
-                return jsonify(data), 406
-            if Users.get(username=username):
-                message = f"User exists with supplied username"
-                data = {"message": message, "data": {}, "status": "error"}
-                return jsonify(data), 406
-            if Users.get(phone=phone):
-                message = f"User exists with supplied Phone number"
-                data = {"message": message, "data": {}, "status": "error"}
-                return jsonify(data), 406
-
-            user = Users(fullname=fullname, email=email, username=username, pin=pin,phone=phone)
-            user.set_password(password)
-            user.save()
-            message = f"User created successfully"
-            data = {"message": message, "data": user.to_dict(), "status": "success"}
-            return jsonify(data), 201
-
+            return create_user(body)
         except KeyError as e:
             message = f"Could not create user, missing required parameter: {e}"
             data = {"message": message, "data": {}, "status": "error"}
@@ -88,19 +63,61 @@ def user():
     user_id = args.get("id")
     username = args.get("username")
     if user_id:
-        user = Users.get(id=user_id)
-        if not user:
-            return jsonify({"data": {}}), 404
+        user = Users.get_or_404(id=user_id)
         return jsonify({"data": user.to_dict()}), 200
     if email:
-        user = Users.get(email=email)
-        if not user:
-            return jsonify({"data": {}}), 404
+        user = Users.get_or_404(email=email)
         return jsonify({"data": user.to_dict()}), 200
     if username:
-        user = Users.get(username=username)
-        if not user:
-            return jsonify({"data": {}}), 404
+        user = Users.get_or_404(username=username)
         return jsonify({"data": user.to_dict()}), 200
     return jsonify(None), 200
 
+def create_user(body):
+    fullname = body["fullname"]
+    email = body["email"]
+    password = body["password"]
+    phone = body["phone"]
+    username = body["username"]
+
+    if Users.get(email=email):
+        message = f"User exists with supplied email"
+        data = {
+            "message": message,
+            "data": {},
+            "status": "error",
+            "reason": "email",
+        }
+        return jsonify(data), 406
+    if Users.get(username=username):
+        message = f"User exists with supplied username"
+        data = {
+            "message": message,
+            "data": {},
+            "status": "error",
+            "reason": "username",
+        }
+        return jsonify(data), 406
+    if Users.get(phone=phone):
+        message = f"User exists with supplied Phone number"
+        data = {
+            "message": message,
+            "data": {},
+            "status": "error",
+            "reason": "phone",
+        }
+        return jsonify(data), 406
+    otp = random.randint(1000, 9999)
+    token = generate_token(email, otp)
+    user = Users(
+        fullname=fullname, email=email, username=username, phone=phone, otp_token=token
+    )
+    user.set_password(password)
+    user.save()
+    email_body = f"Here is your otp: {otp} Expires in 10 minutes"
+    message, code, status = send_mail('Verify Email', email, body=email_body)
+    if not status:
+        data = {"message": message, "user": user.to_dict(), "status": "pending"}, code    
+    else:
+        data = {"message": message, "user": user.to_dict(), "status": "success"}, code
+    return jsonify(data), 201

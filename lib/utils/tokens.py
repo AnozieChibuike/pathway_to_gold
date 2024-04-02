@@ -6,7 +6,7 @@ import os
 load_dotenv()
 
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
-SECRET_KEY = os.getenv("FLASK_SECRET",None)
+SECRET_KEY = os.getenv("FLASK_SECRET", None)
 
 if not SECRET_KEY:
     raise NotImplementedError(
@@ -14,20 +14,20 @@ if not SECRET_KEY:
     )
 
 
-def generate_token(email: str):
+def generate_token(email: str, otp: str = None):
     payload = {
         "email": email,
-        "exp": datetime.utcnow() + timedelta(hours=1),  # Token expires in 1 hour
+        "otp": otp,
+        "exp": datetime.utcnow() + timedelta(seconds=10),  # Token expires in 1 hour
     }
     token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
     return token
 
 
-def verify_token(token: str, user: str):
+def verify_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email = payload.get("email")
-        return {"status": "success"}, 200, True
+        return {"status": "success", "payload": payload}, 200, True
     except jwt.ExpiredSignatureError:
         return {"status": "error", "reason": "code expired"}, 400, False
     except jwt.InvalidTokenError:

@@ -2,6 +2,7 @@ from app import db
 from datetime import datetime
 import uuid
 import pytz
+from flask import abort
 
 class BaseModel(db.Model):
     """
@@ -78,3 +79,24 @@ class BaseModel(db.Model):
         if phone:
             return cls.query.filter_by(phone=phone).first()
         
+        
+    @classmethod
+    def get_or_404(cls,**kwargs):
+        """
+        Retrieve an object by its id or name or email or username.
+        Returns the object if found, None otherwise.
+        Usage:
+            cls.get(name=<name>)
+        """
+        id = kwargs.get('id')
+        email = kwargs.get('email')
+        username = kwargs.get('username')
+        phone = kwargs.get('phone') 
+        if id:
+            return cls.query.get(id) or abort(404, description="User with given ID not found")
+        if email:
+            return cls.query.filter_by(email=email).first() or abort(404, description="User with given email not found")
+        if username:
+            return cls.query.filter_by(username=username).first() or abort(404,description="User with given username not found")
+        if phone:
+            return cls.query.filter_by(phone=phone).first() or abort(404, description="User with given phone number not found")
