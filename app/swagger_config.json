@@ -60,6 +60,27 @@
           },
           "401": { "description": "Unauthorized." }
         }
+      },
+      "put": {
+        "tags": ["User Management"],
+        "summary": "Update a user.",
+        "security": [{ "ApiKeyHeader": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/UpdateUserRequest" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "User updated successfully." },
+          "406": {
+            "description": "Missing required fields."
+          },
+          "401": { "description": "Unauthorized." },
+          "404": { "description": "User not found." }
+        }
       }
     },
     "/api/send-otp": {
@@ -171,6 +192,17 @@
         "password": { "type": "string" },
         "phone": { "type": "string" },
         "username": { "type": "string" }
+      }
+    },
+    "UpdateUserRequest": {
+      "type": "object",
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string" },
+        "pin": { "type": "string" },
+        "username": { "type": "string" },
+        "fullname": { "type": "string" },
+        "password": { "type": "string" }
       }
     }
   }
