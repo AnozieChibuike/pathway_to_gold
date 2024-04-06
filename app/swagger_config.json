@@ -81,6 +81,25 @@
           "401": { "description": "Unauthorized." },
           "404": { "description": "User not found." }
         }
+      },
+      "delete": {
+        "tags": ["User Management"],
+        "summary": "Delete a user.",
+        "security": [{ "ApiKeyHeader": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "id",
+            "required": true
+          }],
+          "responses": {
+            "201": { "description": "User deleted successfully." },
+            "406": {
+              "description": "Missing required fields."
+            },
+            "401": { "description": "Unauthorized." },
+            "404": { "description": "User not found." }
+          }
       }
     },
     "/api/send-otp": {

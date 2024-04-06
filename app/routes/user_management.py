@@ -56,15 +56,30 @@ def user():
             return create_user(body)
         except KeyError as e:
             message = f"Could not create user, missing required parameter: {e}"
-            data = {"message": message, "data": {}, "status": "error"}
+            data = {"error": message, 
+                    # "data": {}, "status": "error"
+                    }
             return jsonify(data), 406
+    if request.method == "DELETE":
+        try:
+            body = request.json
+            return delete_user(body)
+        except KeyError as e:
+            message = f"Could not delete user, missing required parameter: {e}"
+            data = {"error": message,
+                    # "data": {}, "status": "error"
+                    }
+            return jsonify(data), 406
+    
     if request.method == "PUT":
         try:
             body = request.json
             return update_user(body)
         except KeyError as e:
             message = f"Could not update user, missing required parameter: {e}"
-            data = {"message": message, "data": {}, "status": "error"}
+            data = {"error": message, 
+                    # "data": {}, "status": "error"
+                    }
             return jsonify(data), 406
     args = request.args
     email = args.get("email")
@@ -92,28 +107,28 @@ def create_user(body):
     if Users.get(email=email):
         message = f"User exists with supplied email"
         data = {
-            "message": message,
-            "data": {},
-            "status": "error",
-            "reason": "email",
+            "error": message,
+            # "data": {},
+            # "status": "error",
+            # "reason": "email",
         }
         return jsonify(data), 406
     if Users.get(username=username):
         message = f"User exists with supplied username"
         data = {
-            "message": message,
-            "data": {},
-            "status": "error",
-            "reason": "username",
+            "error": message,
+            # "data": {},
+            # "status": "error",
+            # "reason": "username",
         }
         return jsonify(data), 406
     if Users.get(phone=phone):
         message = f"User exists with supplied Phone number"
         data = {
-            "message": message,
-            "data": {},
-            "status": "error",
-            "reason": "phone",
+            "error": message,
+            # "data": {},
+            # "status": "error",
+            # "reason": "phone",
         }
         return jsonify(data), 406
     otp = random.randint(1000, 9999)
@@ -126,7 +141,7 @@ def create_user(body):
     email_body = f"Here is your otp: {otp} Expires in 10 minutes"
     message, code, status = send_mail("Verify Email", email, body=email_body)
     if not status:
-        data = {"message": message, "user": user.to_dict(), "status": "pending"}, code
+        data = {"message": message, "user": user.to_dict(), "status": "email pending"}, code
     else:
         data = {"message": message, "user": user.to_dict(), "status": "success"}, code
     return jsonify(data), 201
@@ -156,10 +171,10 @@ def update_user(body):
         if user_exist:
             message = f"User exists with supplied username"
             data = {
-                "message": message,
-                "data": {},
-                "status": "error",
-                "reason": "username",
+                "error": message,
+                # "data": {},
+                # "status": "error",
+                # "reason": "username",
             }
             return jsonify(data), 406
         user.username = body["username"]
@@ -179,3 +194,9 @@ def update_user(body):
         user.pin = body["pin"]
     user.save()
     return jsonify({"data": user.to_dict()}), 201
+
+def delete_user(body):
+    user_id = body["id"]
+    user = Users.get_or_404(id=user_id)
+    user.delete()
+    return jsonify({"message": "User deleted successfully"}), 200

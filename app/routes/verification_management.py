@@ -30,6 +30,6 @@ def login():
         if user.check_password(password):
             return jsonify({'message': "Logged in"}), 200
         else:
-            return jsonify({'message': "Incorrect password"}), 401
+            return jsonify({'error': "Incorrect password"}), 401
     except KeyError as e:
-        return jsonify({'message': str(e) + "required"}), 400
+        return jsonify({'error': str(e) + "required"}), 400
