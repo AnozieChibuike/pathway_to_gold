@@ -1,7 +1,7 @@
 from flask_mail import Message
 from app import mail, app
 
-DEFAULT_SENDER = app.config.get("EMAIL_FROM")
+DEFAULT_SENDER = app.config.get("MAIL_DEFAULT_SENDER")
 
 
 def send_mail(
@@ -9,7 +9,7 @@ def send_mail(
     recipient: str,
     html: str = None,
     body: str = None,
-    sender: str = DEFAULT_SENDER,
+    sender: str = 'noreply@pathway2gold.com',
 ):
     try:
         msg = Message(subject, recipients=[recipient])
