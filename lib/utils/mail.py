@@ -1,8 +1,12 @@
 from flask_mail import Message
 from app import mail, app
+import os
+from dotenv import load_dotenv
 
-DEFAULT_SENDER_MAIL = app.config.get("MAIL_DEFAULT_SENDER")
-DEFAULT_SENDER_NAME = app.config.get("MAIL_DEFAULT_SENDER_NAME")
+load_dotenv()
+
+DEFAULT_SENDER_MAIL = os.getenv("EMAIL_FROM")
+DEFAULT_SENDER_NAME = os.getenv("EMAIL_NAME")
 
 
 def send_mail(
