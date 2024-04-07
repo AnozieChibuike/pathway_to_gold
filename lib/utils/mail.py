@@ -20,7 +20,7 @@ def send_mail(
         msg = Message(subject, recipients=[recipient])
         msg.body = body
         msg.html = html
-        msg.sender = sender
+        msg.sender = (DEFAULT_SENDER_NAME,DEFAULT_SENDER_MAIL)
         mail.send(msg)
         return "Email sent", 200, True
     except Exception as e:
