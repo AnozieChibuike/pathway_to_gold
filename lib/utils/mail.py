@@ -1,7 +1,7 @@
 from flask_mail import Message
 from app import mail, app
 
-DEFAULT_SENDER = app.config.get("MAIL_DEFAULT_SENDER")
+DEFAULT_SENDER = app.config.get("EMAIL_FROM")
 
 
 def send_mail(
