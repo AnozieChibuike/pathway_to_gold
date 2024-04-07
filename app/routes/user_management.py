@@ -94,7 +94,8 @@ def user():
     if username:
         user = Users.get_or_404(username=username)
         return jsonify({"data": user.to_dict()}), 200
-    return jsonify(Users.all()), 200
+    all_users  = [i.to_dict() for i in Users.all()]
+    return jsonify(all_users), 200
 
 
 def create_user(body):
