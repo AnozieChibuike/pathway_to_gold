@@ -1,10 +1,12 @@
 from app import db
 from datetime import datetime
 import uuid
-import pytz
+import pytz # type: ignore[import-untyped]
 from flask import abort
+from sqlalchemy.orm import Mapped
+import typing
 
-class BaseModel(db.Model):
+class BaseModel(db.Model): # type: ignore[name-defined]
     """
     BaseModel class
     Args:
@@ -13,17 +15,17 @@ class BaseModel(db.Model):
         updated_at: Represents the time each class was updated
     """
     __abstract__ = True
-    id = db.Column(db.String(126), primary_key=True, unique=True, nullable=False)
-    created_at = db.Column(db.DateTime, nullable=False)
-    updated_at = db.Column(db.DateTime, nullable=False)
+    id: Mapped[str] = db.Column(db.String(126), primary_key=True, unique=True, nullable=False)
+    created_at: Mapped[datetime] = db.Column(db.DateTime, nullable=False)
+    updated_at: Mapped[datetime] = db.Column(db.DateTime, nullable=False)
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self.id = str(uuid.uuid4())
         self.created_at = datetime.now(pytz.timezone('Africa/Lagos'))
         self.updated_at = datetime.now(pytz.timezone('Africa/Lagos'))
 
-    def save(self):
+    def save(self) -> None:
         """
         Saves the current session into the database
         """
@@ -31,16 +33,16 @@ class BaseModel(db.Model):
         db.session.add(self)
         db.session.commit()
 
-    def delete(self):
+    def delete(self) -> None:
         """
         Deletes the current session from the database
         """
         db.session.delete(self)
         db.session.commit()
-    def close(self):
+    def close(self) -> None:
         db.session.remove()
     
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """
         Returns a dictionary representation of the object.
         """
@@ -78,6 +80,7 @@ class BaseModel(db.Model):
             return cls.query.filter_by(username=username).first()
         if phone:
             return cls.query.filter_by(phone=phone).first()
+        return None
         
         
     @classmethod

@@ -1,4 +1,4 @@
-HTTP_METHODS = [
+HTTP_METHODS: list[str] = [
     "GET",
     "POST",
     "PUT",

@@ -2,7 +2,7 @@
     User Management
 """
 
-from flask import request, jsonify
+from flask import request, jsonify, Response
 from app.models.user import Users
 from app import app
 import os
@@ -11,14 +11,15 @@ from lib.utils.mail import *
 from lib.utils.protection import protected
 from lib.methods import HTTP_METHODS
 import random
+import typing
 
-base_url = os.getenv("BASE_URL")
-app_api_key = os.getenv("x-api-key")
+base_url: str | None = os.getenv("BASE_URL")
+app_api_key: str | None = os.getenv("x-api-key")
 
 
 @app.route("/api/user", methods=HTTP_METHODS)
 @protected
-def user():
+def user() -> tuple[Response, int]:
     """User Management
 
     methods:
@@ -50,9 +51,12 @@ def user():
                 username <str>
                 pin <str>
     """
+    message: str
+    data: dict
+    user: Users
     if request.method == "POST":
         try:
-            body = request.json
+            body: dict = request.json # type: ignore[assignment]
             return create_user(body)
         except KeyError as e:
             message = f"Could not create user, missing required parameter: {e}"
@@ -60,9 +64,11 @@ def user():
                     # "data": {}, "status": "error"
                     }
             return jsonify(data), 406
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     if request.method == "DELETE":
         try:
-            body = request.json
+            body = request.json # type: ignore[assignment]
             return delete_user(body)
         except KeyError as e:
             message = f"Could not delete user, missing required parameter: {e}"
@@ -70,10 +76,12 @@ def user():
                     # "data": {}, "status": "error"
                     }
             return jsonify(data), 406
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     
     if request.method == "PUT":
         try:
-            body = request.json
+            body = request.json # type: ignore[assignment]
             return update_user(body)
         except KeyError as e:
             message = f"Could not update user, missing required parameter: {e}"
@@ -81,6 +89,8 @@ def user():
                     # "data": {}, "status": "error"
                     }
             return jsonify(data), 406
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
     args = request.args
     email = args.get("email")
     user_id = args.get("id")
@@ -98,12 +108,14 @@ def user():
     return jsonify(all_users), 200
 
 
-def create_user(body):
-    fullname = body["fullname"]
-    email = body["email"]
-    password = body["password"]
-    phone = body["phone"]
-    username = body["username"]
+def create_user(body: dict) -> tuple[Response, int]:
+    fullname: str = body["fullname"]
+    email: str = body["email"]
+    password: str = body["password"]
+    phone: str = body["phone"]
+    username: str = body["username"]
+    message: str
+    data: dict[str, str | dict]
 
     if Users.get(email=email):
         message = f"User exists with supplied email"
@@ -132,39 +144,41 @@ def create_user(body):
             # "reason": "phone",
         }
         return jsonify(data), 406
-    otp = random.randint(1000, 9999)
-    token = generate_token(email, otp)
-    user = Users(
+    otp: str = str(random.randint(1000, 9999))
+    token: str = generate_token(email, otp)
+    user: Users = Users(
         fullname=fullname, email=email, username=username, phone=phone, otp_token=token
     )
     user.set_password(password)
     user.save()
-    email_body = f"Here is your otp: {otp} Expires in 10 minutes"
+    email_body: str = f"Here is your otp: {otp} Expires in 10 minutes"
     message, code, status = send_mail("Verify Email", email, body=email_body)
     if not status:
-        data = {"message": message, "user": user.to_dict(), "status": "email pending"}, code
+        data = {"message": message, "user": user.to_dict(), "status": "email pending"}
     else:
-        data = {"message": message, "user": user.to_dict(), "status": "success"}, code
-    return jsonify(data), 201
+        data = {"message": message, "user": user.to_dict(), "status": "success"}
+    return jsonify(data), code
 
-
-def update_user(body):
-    user_id = body["id"]
-    user = Users.get_or_404(id=user_id)
+def update_user(body: dict) -> tuple[Response, int]:
+    user_id: str = body["id"]
+    message: str
+    user_exist: Users | None
+    data: dict[str, str | dict]
+    user: Users = Users.get_or_404(id=user_id)
     if "fullname" in body:
         user.fullname = body["fullname"]
     # if "email" in body:
-        user_exist = Users.get(email=body["email"])
-        if user_exist:
-            message = f"User exists with supplied email"
-            data = {
-                "message": message,
-                "data": {},
-                "status": "error",
-                "reason": "email",
-            }
-            return jsonify(data), 406
-        user.email = body["email"]
+    #     user_exist = Users.get(email=body["email"])
+    #     if user_exist:
+    #         message = f"User exists with supplied email"
+    #         data = {
+    #             "error": message,
+    #             # "data": {},
+    #             # "status": "error",
+    #             # "reason": "email",
+    #         }
+    #         return jsonify(data), 406
+    #     user.email = body["email"]
     if "password" in body:
         user.set_password(body["password"])
     if "username" in body:
@@ -180,24 +194,51 @@ def update_user(body):
             return jsonify(data), 406
         user.username = body["username"]
     # if "phone" in body:
-        user_exist = Users.get(phone=body["phone"])
-        if user_exist:
-            message = f"User exists with supplied Phone number"
+    #     user_exist = Users.get(phone=body["phone"])
+    #     if user_exist:
+    #         message = f"User exists with supplied Phone number"
+    #         data = {
+    #             "error": message,
+    #             # "data": {},
+    #             # "status": "error",
+    #             # "reason": "phone",
+    #         }
+    #         return jsonify(data), 406
+    #      user.phone = body["phone"]
+    if "pin" in body:
+        if len(body["pin"]) != 4:
+            message = f"Pin must be 4 digits"
             data = {
-                "message": message,
-                "data": {},
-                "status": "error",
-                "reason": "phone",
+                "error": message,
+                # "data": {},
+                # "status": "error",
+                # "reason": "pin",
             }
             return jsonify(data), 406
-        user.phone = body["phone"]
-    if "pin" in body:
         user.pin = body["pin"]
     user.save()
     return jsonify({"data": user.to_dict()}), 201
 
-def delete_user(body):
-    user_id = body["id"]
-    user = Users.get_or_404(id=user_id)
+def delete_user(body: dict) -> tuple[Response, int]:
+    user_id: str = body["id"]
+    user: Users = Users.get_or_404(id=user_id)
     user.delete()
     return jsonify({"message": "User deleted successfully"}), 200
+
+@app.post('/api/set-pin')
+@protected
+def set_pin() -> tuple[Response, int]:
+    """Set Pin"""
+    try:
+        user: Users = Users.get_or_404(id=request.json['id']) # type: ignore[index]
+        user.pin = request.json['pin'] # type: ignore[index]
+        user.save()
+        return jsonify({"message": "Pin set successfully"}), 200
+    except KeyError as e:
+        message: str = f"Could not set pin, missing required parameter: {e}"
+        data: dict = {"error": message,
+                # "data": {}, "status": "error"
+                }
+        return jsonify(data), 406
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500

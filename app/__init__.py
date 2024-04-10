@@ -1,7 +1,7 @@
 from flask import Flask
-from flask_mail import Mail
+from flask_mail import Mail # type: ignore[import-untyped]
 from config import Config
-from flask_migrate import Migrate
+from flask_migrate import Migrate # type: ignore[import-untyped]
 from flask_sqlalchemy import SQLAlchemy
 
 app = Flask(__name__)

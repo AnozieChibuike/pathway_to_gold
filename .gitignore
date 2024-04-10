@@ -5,3 +5,4 @@ node_modules
 *instance
 *__pycache__
 *migrations
+*.mypy_cache

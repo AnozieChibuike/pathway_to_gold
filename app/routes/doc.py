@@ -1,6 +1,7 @@
 from app import app
 from flask import send_file
 import os
+from flask import Response
 
 base_url = os.getenv('BASE_URL')
 
@@ -34,11 +35,11 @@ SWAGGER_UI_HTML = """
 """
 
 @app.route("/docs")
-def docs():
+def docs() -> tuple[str, int, dict[str,str]]:
     return SWAGGER_UI_HTML, 200, {"Content-Type": "text/html"}
 
 @app.route('/swagger.json')
-def swagger_json():
-    print(os.getcwd())
+def swagger_json() -> Response:
     return send_file('swagger_config.json', mimetype='application/json')
+
 
