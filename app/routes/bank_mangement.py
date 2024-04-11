@@ -32,7 +32,12 @@ def create_bank(body: dict[str,typing.Any]) -> tuple[Response, int]:
         result, returned_name, bank_is_valid = check_bank_details(name=user.fullname,**bank_details)
         if not bank_is_valid:
             return jsonify({'error': result}), 400
-        bank: BankAccount = BankAccount(user=user, account_name=returned_name,**bank_details)
+        filtered_bank: dict[str, str] = {key: value for key, value in bank_details.items() if key in required_fields}
+        filter_user_account: list[BankAccount] = list(filter(lambda bank: bank.bank_code == bank_details["bank_code"], user.bank_accounts))
+        if len(filter_user_account) > 0:
+            data = {'user': user.to_dict(), 'bank': filter_user_account[0].to_dict()}
+            return jsonify(data), 201
+        bank: BankAccount = BankAccount(user=user, account_name=returned_name,**filtered_bank)
         bank.save()
         data = {'user': user.to_dict(), 'bank': bank.to_dict()}
         return jsonify(data), 201
