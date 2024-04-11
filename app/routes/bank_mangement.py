@@ -23,13 +23,16 @@ def create_bank(body: dict[str,typing.Any]) -> tuple[Response, int]:
     try:
         userId: str = body['id']
         bank_details: dict[str, str]  = body['bank'] # bank_name, account_number, bank_code
+        required_fields: list[str] = ['bank_name', 'account_number', 'bank_code']
+        if not all(field in bank_details for field in required_fields):
+            return jsonify({'error': f'missing required field: {required_fields}'}), 400
         user: Users = Users.get(id=userId)
         if not user:
             return jsonify({'error': 'User not found'}), 404
-        result, bank_is_valid = check_bank_details(name=user.fullname,**bank_details)
+        result, returned_name, bank_is_valid = check_bank_details(name=user.fullname,**bank_details)
         if not bank_is_valid:
             return jsonify({'error': result}), 400
-        bank: BankAccount = BankAccount(user=user, **bank_details)
+        bank: BankAccount = BankAccount(user=user, account_name=returned_name,**bank_details)
         bank.save()
         data = {'user': user.to_dict(), 'bank': bank.to_dict()}
         return jsonify(data), 201

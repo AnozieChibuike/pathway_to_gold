@@ -91,15 +91,16 @@
             "in": "body",
             "name": "id",
             "required": true
-          }],
-          "responses": {
-            "201": { "description": "User deleted successfully." },
-            "406": {
-              "description": "Missing required fields."
-            },
-            "401": { "description": "Unauthorized." },
-            "404": { "description": "User not found." }
           }
+        ],
+        "responses": {
+          "201": { "description": "User deleted successfully." },
+          "406": {
+            "description": "Missing required fields."
+          },
+          "401": { "description": "Unauthorized." },
+          "404": { "description": "User not found." }
+        }
       }
     },
     "/api/send-otp": {
@@ -166,6 +167,37 @@
           }
         }
       }
+    },
+    "/api/bank": {
+      "post": {
+        "tags": ["Bank Management"],
+        "summary": "Attach a bank to a user",
+        "security": [{ "ApiKeyHeader": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/CreateBankRequest" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "Bank created successfully." },
+          "400": {
+            "description": "Bad request"
+          },
+          "401": { "description": "Unauthorized." }
+        }
+      }
+    },
+    "/static/banks.json":{
+      "get": {
+        "tags": ["Miscellaneous"],
+        "summary": "Get financial institutions details registered with NIBBS",
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
     }
   },
   "definitions": {
@@ -222,6 +254,22 @@
         "username": { "type": "string" },
         "fullname": { "type": "string" },
         "password": { "type": "string" }
+      }
+    },
+    "CreateBankRequest": {
+      "type": "object",
+      "required": ["id", "bank"],
+      "properties": {
+        "id": { "type": "string" },
+        "bank": { 
+          "type": "object", 
+          "properties": {
+            "bank_name": {"type": "string"},
+            "account_number": {"type": "string"},
+            "bank_code": {"type": "string"}
+          },
+          "required": ["bank_name","account_number","bank_code"] 
+        }
       }
     }
   }
