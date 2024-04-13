@@ -1,3 +1,7 @@
+"""
+Bank management endpoints
+"""
+
 from app import app
 from flask import request, Response, jsonify
 from app.models.user import Users
