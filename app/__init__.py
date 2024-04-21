@@ -3,15 +3,11 @@ from flask_mail import Mail # type: ignore[import-untyped]
 from config import Config
 from flask_migrate import Migrate # type: ignore[import-untyped]
 from flask_sqlalchemy import SQLAlchemy
-from flask_babel import Babel
 
 app = Flask(__name__)
 app.config.from_object(Config)
 
-def get_locale():
-    return 'de'
 
-babel = Babel(app, locale_selector=get_locale)
 db = SQLAlchemy(app)
 migrate = Migrate(app,db)
 mail = Mail(app)
