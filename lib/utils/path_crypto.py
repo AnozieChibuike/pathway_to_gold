@@ -12,7 +12,6 @@ import base64
 
 load_dotenv()
 
-client = Crypto()
 
 class Crypto:
     def __init__(self):
