@@ -202,6 +202,22 @@
           "200": { "description": "Success" }
         }
       }
+    },
+    "/api/price": {
+      "get": {
+        "tags": ["Miscellaneous"],
+        "summary": "Get coin current price",
+        "responses": {
+          "200": { "description": "Success" }
+        },
+        "parameters": [
+          {
+            "in": "query",
+            "name": "id",
+            "required": false
+          }
+        ]
+      }
     }
   },
   "definitions": {
