@@ -213,8 +213,8 @@
         "parameters": [
           {
             "in": "query",
-            "name": "id",
-            "required": false
+            "name": "coin",
+            "required": true
           }
         ]
       }
