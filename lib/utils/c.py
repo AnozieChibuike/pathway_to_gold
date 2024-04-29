@@ -54,7 +54,9 @@
 # print(f"Current BTC Price: {btc_price}")
 
 from path_crypto import Crypto
+from pprint import pprint
 
 client = Crypto()
 
-print(client.get_balance())
+# pprint(client.get_pair_price('btc'))
+pprint(client.check_deposits())

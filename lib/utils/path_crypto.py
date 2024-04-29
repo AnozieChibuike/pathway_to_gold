@@ -8,8 +8,11 @@ import hashlib
 import time
 from urllib.parse import urlencode
 import pytz
+import base64
 
 load_dotenv()
+
+client = Crypto()
 
 class Crypto:
     def __init__(self):
@@ -18,68 +21,88 @@ class Crypto:
         self.passphrase = os.getenv("OKX_PASSPHRASE")
         self.api_version = os.getenv("OKX_API_VERSION",)
         self.base_url = os.getenv("OKX_URL",)
+    
+    def set_headers(self, timestamp: str, signature: str) -> dict[str,str]:
+        headers = {
+            'Content-Type': 'application/json',
+            'OK-ACCESS-KEY': self.api_key,
+            'OK-ACCESS-SIGN': signature,
+            'OK-ACCESS-TIMESTAMP': timestamp,
+            'OK-ACCESS-PASSPHRASE': self.passphrase,
+        }
+        return headers
+    
+    def create_signature(self,timestamp, method, request_path, body) -> str:
+        message = timestamp + method + request_path + (body if body else '')
+        hmac_key = bytes(self.secret_key, encoding='utf-8')
+        message = bytes(message, encoding='utf-8')
 
-    def get_pair_price(self, base: str, target: str):
+        sign = hmac.new(hmac_key, message, hashlib.sha256).digest()
+        signature = base64.b64encode(sign).decode('utf-8')
+        return signature
+
+    def get_pair_price(self, base: str, target: str = 'usdt'):
         # API URL
-        url = f"{self.base_url}/{self.api_version}/market/ticker"
+        request_path = f"/api/{self.api_version}/market/ticker"
         
         # Parameters
         params = {
             'instId': f'{base.upper()}-{target.upper()}'
         }
+        method = 'GET'
+        body = ''
 
         # API key details
         timestamp = str(time.time())
 
         # Preparing the signature
-        message = timestamp + 'GET' + f'/api/v{self.api_version}/market/ticker?' + urlencode(params)
-        signature = hmac.new(self.secret_key.encode(), message.encode(), hashlib.sha256).hexdigest()
+        signature = self.create_signature(timestamp, method, request_path, body)
 
         # Headers
-        headers = {
-            'OK-ACCESS-KEY': self.api_key,
-            'OK-ACCESS-SIGN': signature,
-            'OK-ACCESS-TIMESTAMP': timestamp,
-            'OK-ACCESS-PASSPHRASE': self.passphrase,
-            'Content-Type': 'application/json'
-        }
+        headers = self.set_headers(timestamp, signature)
 
         # Making the request
-        response = requests.get(url, headers=headers, params=params)
+        response = requests.get(self.base_url + request_path, headers=headers, params=params)
         if response.status_code == 200:
             data = response.json()
             return data
         else:
             return f"Error: {response.status_code}, Message: {response.text}"
         
+    def get_server_time(self):
+        timestamp = datetime.now(tz=timezone.utc).isoformat()[0:-9] + "Z"
+        return timestamp
+        
     def get_balance(self):
         # API URL
-        url = f"{self.base_url}/{self.api_version}/account/balance?ccy=BTC"
-    
-        # API key details
-        # timestamp = datetime.now(pytz.timezone('Europe/Warsaw')).strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-        # timestamp = str(datetime.now(pytz.timezone('Europe/Warsaw')).isoformat())[0:-9] + "Z"
-        timestamp = datetime.now(tz=timezone.utc).isoformat()[0:-9] + "Z"
+        method = 'GET'
+        request_path = f'/api/{self.api_version}/account/balance?ccy=BTC'
+        body = ''
+        timestamp = self.get_server_time()
+        signature = self.create_signature(timestamp, method, request_path, body)
 
-        # Preparing the signature
-        message = timestamp + 'GET' + f'/api/{self.api_version}/account/balance?ccy=BTC'
-        print(message)
-        signature = hmac.new(self.secret_key.encode(), message.encode(), hashlib.sha256).hexdigest()
-        print(signature)
-
-        # Headers
-        headers = {
-            'OK-ACCESS-KEY': self.api_key,
-            'OK-ACCESS-SIGN': signature,
-            'OK-ACCESS-TIMESTAMP': timestamp,
-            'OK-ACCESS-PASSPHRASE': self.passphrase,
-            'Content-Type': 'application/json'
-        }
-
-        # Making the request
-        response = requests.get(url, headers=headers)
+        # Create the required headers
+        headers = self.set_headers(timestamp, signature)
+        # Make the request
+        response = requests.get(self.base_url + request_path, headers=headers)
         if response.status_code == 200:
             data = response.json()
             return data
         else:
             return f"Error: {response.status_code}, Message: {response.text}"
+        
+    def check_deposits(self):
+        method = 'GET'
+        request_path = f'/api/{self.api_version}/account/deposit/history'
+        body = ''
+        timestamp = self.get_server_time()
+        signature = self.create_signature(timestamp, method, request_path, body)
+
+        headers = self.set_headers(timestamp, signature)
+        response = requests.get(self.base_url + request_path, headers=headers)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            return f"Error: {response.status_code}, Message: {response.text}"
+
+client: Crypto = Crypto()
