@@ -218,6 +218,15 @@
           }
         ]
       }
+    },
+    "/api/landing-prices": {
+      "get": {
+        "tags": ["Miscellaneous"],
+        "summary": "Get landing page current price",
+        "responses": {
+          "200": { "description": "Success" }
+        }
+      }
     }
   },
   "definitions": {

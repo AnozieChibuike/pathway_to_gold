@@ -18,8 +18,8 @@ class Crypto:
         self.api_key = os.getenv("OKX_API_KEY")
         self.secret_key = os.getenv("OKX_SECRET_KEY")
         self.passphrase = os.getenv("OKX_PASSPHRASE")
-        self.api_version = os.getenv("OKX_API_VERSION",)
-        self.base_url = os.getenv("OKX_URL",)
+        self.api_version = os.getenv("OKX_API_VERSION","v5")
+        self.base_url = os.getenv("OKX_URL","https://www.okx.com")
     
     def set_headers(self, timestamp: str, signature: str) -> dict[str,str]:
         headers = {

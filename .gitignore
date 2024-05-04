@@ -6,3 +6,4 @@ node_modules
 *__pycache__
 *migrations
 *.mypy_cache
+*_test.py
