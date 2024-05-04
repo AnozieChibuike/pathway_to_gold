@@ -11,13 +11,21 @@ from lib.utils.mail import *
 from lib.utils.protection import protected
 from lib.methods import HTTP_METHODS
 import random
-import typing
+from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token
 
 base_url: str | None = os.getenv("BASE_URL")
 app_api_key: str | None = os.getenv("x-api-key")
 
 
+@app.route("/api/user/all")
+@protected
+def all_users() -> tuple[Response, int]:
+    """Get all users"""
+    all_users  = [i.to_dict() for i in Users.all()]
+    return jsonify(all_users), 200
+
 @app.route("/api/user", methods=HTTP_METHODS)
+@jwt_required()
 @protected
 def user() -> tuple[Response, int]:
     """User Management
@@ -53,36 +61,18 @@ def user() -> tuple[Response, int]:
     """
     message: str
     data: dict
-    user: Users
+    user: Users = Users.get_or_404(id=get_jwt_identity())
     if request.method == "POST":
-        try:
-            body: dict = request.json # type: ignore[assignment]
-            return create_user(body)
-        except KeyError as e:
-            message = f"Could not create user, missing required parameter: {e}"
-            data = {"error": message, 
-                    # "data": {}, "status": "error"
-                    }
-            return jsonify(data), 406
-        except Exception as e:
-            return jsonify({'error': str(e)}), 500
+        return jsonify({'message': "Call <post> '/api/user/create' instead"}), 500
     if request.method == "DELETE":
         try:
-            body = request.json # type: ignore[assignment]
-            return delete_user(body)
-        except KeyError as e:
-            message = f"Could not delete user, missing required parameter: {e}"
-            data = {"error": message,
-                    # "data": {}, "status": "error"
-                    }
-            return jsonify(data), 406
+            return delete_user(user)
         except Exception as e:
-            return jsonify({'error': str(e)}), 500
-    
+            return jsonify({'error': str(e)}), 500   
     if request.method == "PUT":
         try:
-            body = request.json # type: ignore[assignment]
-            return update_user(body)
+            body: dict = request.json # type: ignore[assignment]
+            return update_user(user,body)
         except KeyError as e:
             message = f"Could not update user, missing required parameter: {e}"
             data = {"error": message, 
@@ -91,22 +81,16 @@ def user() -> tuple[Response, int]:
             return jsonify(data), 406
         except Exception as e:
             return jsonify({'error': str(e)}), 500
-    args = request.args
-    email = args.get("email")
-    user_id = args.get("id")
-    username = args.get("username")
-    if user_id:
-        user = Users.get_or_404(id=user_id)
-        return jsonify({"data": user.to_dict()}), 200
-    if email:
-        user = Users.get_or_404(email=email)
-        return jsonify({"data": user.to_dict()}), 200
-    if username:
-        user = Users.get_or_404(username=username)
-        return jsonify({"data": user.to_dict()}), 200
+        
+    return jsonify(user.to_dict()), 200
     all_users  = [i.to_dict() for i in Users.all()]
     return jsonify(all_users), 200
 
+@app.post("/api/user/create")
+@protected
+def create_user_route() -> tuple[Response, int]:
+    body: dict = request.json # type: ignore[assignment]
+    return create_user(body)
 
 def create_user(body: dict) -> tuple[Response, int]:
     fullname: str = body["fullname"]
@@ -159,12 +143,11 @@ def create_user(body: dict) -> tuple[Response, int]:
         data = {"message": message, "user": user.to_dict(), "status": "success"}
     return jsonify(data), code
 
-def update_user(body: dict) -> tuple[Response, int]:
+def update_user(user: Users,body: dict) -> tuple[Response, int]:
     user_id: str = body["id"]
     message: str
     user_exist: Users | None
     data: dict[str, str | dict]
-    user: Users = Users.get_or_404(id=user_id)
     if "fullname" in body:
         user.fullname = body["fullname"]
     # if "email" in body:
@@ -217,20 +200,21 @@ def update_user(body: dict) -> tuple[Response, int]:
             return jsonify(data), 406
         user.pin = body["pin"]
     user.save()
-    return jsonify({"data": user.to_dict()}), 201
+    return jsonify({"message": "User updated"}), 201
 
-def delete_user(body: dict) -> tuple[Response, int]:
-    user_id: str = body["id"]
-    user: Users = Users.get_or_404(id=user_id)
+def delete_user(user: Users) -> tuple[Response, int]:
     user.delete()
     return jsonify({"message": "User deleted successfully"}), 200
 
+
+
 @app.post('/api/set-pin')
+@jwt_required()
 @protected
 def set_pin() -> tuple[Response, int]:
     """Set Pin"""
     try:
-        user: Users = Users.get_or_404(id=request.json['id']) # type: ignore[index]
+        user: Users = Users.get_or_404(id=get_jwt_identity()) # type: ignore[index]
         user.pin = request.json['pin'] # type: ignore[index]
         user.save()
         return jsonify({"message": "Pin set successfully"}), 200

@@ -10,54 +10,35 @@
       "type": "apiKey",
       "in": "header",
       "name": "X-API-KEY"
+    },
+    "Bearer": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "JWT Authorization header using the Bearer scheme. Example: 'Authorization: Bearer {token}'"
     }
   },
   "paths": {
-    "/api/user": {
+    "/api/user/all": {
       "get": {
         "tags": ["User Management"],
-        "summary": "Get user information by ID, email, or username.",
+        "summary": "Get all users",
         "security": [{ "ApiKeyHeader": [] }],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "id",
-            "required": false
-          },
-          {
-            "in": "query",
-            "name": "email",
-            "required": false
-          },
-          {
-            "in": "query",
-            "name": "username",
-            "required": false
-          }
-        ],
         "responses": {
           "200": { "description": "User information retrieved successfully." },
           "404": { "description": "User not found." },
           "401": { "description": "Unauthorized." }
         }
-      },
-      "post": {
+      }
+    },
+    "/api/user": {
+      "get": {
         "tags": ["User Management"],
-        "summary": "Create a new user.",
-        "security": [{ "ApiKeyHeader": [] }],
-        "parameters": [
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "schema": { "$ref": "#/definitions/CreateUserRequest" }
-          }
-        ],
+        "summary": "Get user information",
+        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
         "responses": {
-          "201": { "description": "User created successfully." },
-          "406": {
-            "description": "User already exists or missing required fields."
-          },
+          "200": { "description": "User information retrieved successfully." },
+          "404": { "description": "User not found." },
           "401": { "description": "Unauthorized." }
         }
       },
@@ -104,6 +85,28 @@
           },
           "401": { "description": "Unauthorized." },
           "404": { "description": "User not found." }
+        }
+      }
+    },
+    "/api/user/create": {
+      "post": {
+        "tags": ["User Management"],
+        "summary": "Create a new user.",
+        "security": [{ "ApiKeyHeader": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/CreateUserRequest" }
+          }
+        ],
+        "responses": {
+          "201": { "description": "User created successfully." },
+          "406": {
+            "description": "User already exists or missing required fields."
+          },
+          "401": { "description": "Unauthorized." }
         }
       }
     },
@@ -241,7 +244,7 @@
     },
     "VerifyOtpRequest": {
       "type": "object",
-      "required": ["email", "otp"],
+      "required": ["otp"],
       "properties": {
         "email": { "type": "string" },
         "otp": { "type": "string" }
@@ -276,9 +279,7 @@
     },
     "UpdateUserRequest": {
       "type": "object",
-      "required": ["id"],
       "properties": {
-        "id": { "type": "string" },
         "pin": { "type": "string" },
         "username": { "type": "string" },
         "fullname": { "type": "string" },
@@ -287,9 +288,8 @@
     },
     "CreateBankRequest": {
       "type": "object",
-      "required": ["id", "bank"],
+      "required": ["bank"],
       "properties": {
-        "id": { "type": "string" },
         "bank": {
           "type": "object",
           "properties": {

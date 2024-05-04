@@ -11,28 +11,27 @@ from lib.methods import HTTP_METHODS
 import typing
 import requests # type: ignore[import-untyped]
 from lib.utils.checkBank import check_bank_details
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 @app.route('/api/bank',methods=HTTP_METHODS)
+@jwt_required()
 @protected
 def bank() -> tuple[Response, int]:
     data: dict
     code: int
+    user: Users = Users.get_or_404(id=get_jwt_identity())
     body: dict = request.json  # type: ignore[assignment]
     if request.method == 'POST':
-        return create_bank(body)
+        return create_bank(user,body)
     return jsonify(data), code
 
-def create_bank(body: dict[str,typing.Any]) -> tuple[Response, int]:
+def create_bank(user: Users, body: dict[str,typing.Any]) -> tuple[Response, int]:
     data: dict
     try:
-        userId: str = body['id']
         bank_details: dict[str, str]  = body['bank'] # bank_name, account_number, bank_code
         required_fields: list[str] = ['bank_name', 'account_number', 'bank_code']
         if not all(field in bank_details for field in required_fields):
             return jsonify({'error': f'missing required field: {required_fields}'}), 400
-        user: Users = Users.get(id=userId)
-        if not user:
-            return jsonify({'error': 'User not found'}), 404
         result, returned_name, bank_is_valid = check_bank_details(name=user.fullname,**bank_details)
         if not bank_is_valid:
             return jsonify({'error': result}), 400

@@ -17,4 +17,5 @@ class Config:
     MAIL_PASSWORD=os.getenv('EMAIL_SERVER_PASSWORD')
     MAIL_DEFAULT_SENDER=os.getenv('EMAIL_FROM')
     MAIL_DEFAULT_SENDER_NAME=os.getenv('EMAIL_NAME')
+    JWT_SECRET_KEY = os.getenv("FLASK_SECRET", secrets.token_hex())
     
