@@ -12,7 +12,7 @@ def verify_otp() -> tuple[Response, int]:
     try:
         data: dict[str,str] = request.json # type: ignore[assignment]
         user: Users = Users.get_or_404(id=get_jwt_identity())
-        email = user.email
+        # email = user.email
         otp = str(data['otp'])
         int(otp) # Used to raise error incase
         message, status, code = user.verify_otp(otp)

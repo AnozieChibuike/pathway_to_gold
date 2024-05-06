@@ -45,7 +45,7 @@
       "put": {
         "tags": ["User Management"],
         "summary": "Update a user.",
-        "security": [{ "ApiKeyHeader": [] }],
+        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
         "parameters": [
           {
             "in": "body",
@@ -66,18 +66,7 @@
       "delete": {
         "tags": ["User Management"],
         "summary": "Delete a user.",
-        "security": [{ "ApiKeyHeader": [] }],
-        "parameters": [
-          {
-            "in": "body",
-            "type": "object",
-            "name": "body",
-            "required": ["id"],
-            "properties": {
-              "id": { "type": "string" }
-            }
-          }
-        ],
+        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
         "responses": {
           "201": { "description": "User deleted successfully." },
           "406": {
@@ -115,7 +104,7 @@
         "tags": ["Mail Management"],
         "summary": "Send an OTP to a user's email.",
         "description": "This endpoint is protected and sends an OTP for email verification purposes.",
-        "security": [{ "ApiKeyHeader": [] }],
+        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
         "parameters": [
           {
             "in": "body",
@@ -135,7 +124,7 @@
       "post": {
         "tags": ["Verification Management"],
         "summary": "Verify the OTP sent to a user.",
-        "security": [{ "ApiKeyHeader": [] }],
+        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
         "parameters": [
           {
             "in": "body",
@@ -179,7 +168,7 @@
       "post": {
         "tags": ["Bank Management"],
         "summary": "Attach a bank to a user",
-        "security": [{ "ApiKeyHeader": [] }],
+        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
         "parameters": [
           {
             "in": "body",
@@ -237,7 +226,6 @@
       "type": "object",
       "required": ["email"],
       "properties": {
-        "email": { "type": "string" },
         "subject": { "type": "string" },
         "template": { "type": "string" }
       }
@@ -246,7 +234,6 @@
       "type": "object",
       "required": ["otp"],
       "properties": {
-        "email": { "type": "string" },
         "otp": { "type": "string" }
       }
     },
