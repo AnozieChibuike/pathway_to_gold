@@ -7,4 +7,4 @@ class BankAccount(BaseModel):
     account_name: Mapped[str] = db.Column(db.String(50), nullable=False, default='')
     bank_code: Mapped[str] = db.Column(db.String(50), nullable=False)
     bank_name: Mapped[str] = db.Column(db.String(50))
-    user_id: Mapped[str] = db.Column(db.String(126), db.ForeignKey('users.id'), nullable=False)
+    user_id: Mapped[str] = db.Column(db.String(126), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)

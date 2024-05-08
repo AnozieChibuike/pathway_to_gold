@@ -29,7 +29,7 @@ class Users(BaseModel):
     email_verified: Mapped[bool] = db.Column(db.Boolean, default=False)
     account_verified: Mapped[bool] = db.Column(db.Boolean, default=False)
     pin: Mapped[str] = db.Column(db.String(4))
-    bank_accounts = db.relationship("BankAccount", backref="user", lazy=True)
+    bank_accounts = db.relationship("BankAccount", backref="user", lazy=True, cascade='all, delete-orphan', passive_deletes=True)
     balance: Mapped[float] = db.Column(db.Float, default=0)
     otp_token: Mapped[str] = db.Column(db.String(126))
 

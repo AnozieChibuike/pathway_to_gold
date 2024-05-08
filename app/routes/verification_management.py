@@ -1,36 +1,41 @@
+import random
 from flask import jsonify, Response
 from app import app
 from flask import request
 from app.models.user import Users
+from lib.utils.mail import send_mail
 from lib.utils.protection import protected
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
-    
-@app.post('/api/verify-otp')
+from lib.utils.tokens import generate_token
+
+
+@app.post("/api/verify-otp")
 @jwt_required()
 @protected
 def verify_otp() -> tuple[Response, int]:
     try:
-        data: dict[str,str] = request.json # type: ignore[assignment]
+        data: dict[str, str] = request.json  # type: ignore[assignment]
         user: Users = Users.get_or_404(id=get_jwt_identity())
         # email = user.email
-        otp = str(data['otp'])
-        int(otp) # Used to raise error incase
+        otp = str(data["otp"])
+        int(otp)  # Used to raise error incase
         message, status, code = user.verify_otp(otp)
         if not status:
-            return jsonify({'error': message}), code
-        return jsonify({'message': message, 'status': status}), code
+            return jsonify({"error": message}), code
+        return jsonify({"message": message, "status": status}), code
     except KeyError as e:
-        return jsonify({'error': str(e)}), 400
+        return jsonify({"error": str(e)}), 400
     except ValueError as e:
-        return jsonify({'error': "Otp should all be numbers"}), 400   
+        return jsonify({"error": "Otp should all be numbers"}), 400
     except Exception as e:
-        return jsonify({'error': str(e)}), 500 
+        return jsonify({"error": str(e)}), 500
 
-@app.post("/api/login") 
+
+@app.post("/api/login")
 @protected
 def login():
     """Login"""
-    data: dict = request.json # type: ignore[assignment]
+    data: dict = request.json  # type: ignore[assignment]
     try:
         email: str = data["email"]
         password: str = data["password"]
@@ -45,3 +50,62 @@ def login():
             return jsonify({"error": "Invalid password"}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+
+@app.post("/api/signup")
+@protected
+def signup() -> tuple[Response, int]:
+    body: dict = request.json  # type: ignore[assignment]
+    return create_user(body)
+
+
+def create_user(body: dict) -> tuple[Response, int]:
+    fullname: str = body["fullname"]
+    email: str = body["email"]
+    password: str = body["password"]
+    phone: str = body["phone"]
+    username: str = body["username"]
+    message: str
+    data: dict[str, str | dict]
+
+    if Users.get(email=email):
+        message = f"User exists with supplied email"
+        data = {
+            "error": message,
+            # "data": {},
+            # "status": "error",
+            # "reason": "email",
+        }
+        return jsonify(data), 406
+    if Users.get(username=username):
+        message = f"User exists with supplied username"
+        data = {
+            "error": message,
+            # "data": {},
+            # "status": "error",
+            # "reason": "username",
+        }
+        return jsonify(data), 406
+    if Users.get(phone=phone):
+        message = f"User exists with supplied Phone number"
+        data = {
+            "error": message,
+            # "data": {},
+            # "status": "error",
+            # "reason": "phone",
+        }
+        return jsonify(data), 406
+    otp: str = str(random.randint(1000, 9999))
+    token: str = generate_token(email, otp)
+    user: Users = Users(
+        fullname=fullname, email=email, username=username, phone=phone, otp_token=token
+    )
+    user.set_password(password)
+    user.save()
+    email_body: str = f"Here is your otp: {otp} Expires in 10 minutes"
+    message, code, status = send_mail("Verify Email", email, body=email_body)
+    if not status:
+        data = {"message": message, "user": user.to_dict(), "status": "email pending"}
+    else:
+        data = {"message": message, "user": user.to_dict(), "status": "success"}
+    return jsonify(data), code

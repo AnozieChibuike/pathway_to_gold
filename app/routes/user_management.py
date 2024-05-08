@@ -19,9 +19,9 @@ app_api_key: str | None = os.getenv("x-api-key")
 
 @app.route("/api/user/all")
 @protected
-def all_users() -> tuple[Response, int]:
+def _all_users() -> tuple[Response, int]:
     """Get all users"""
-    all_users  = [i.to_dict() for i in Users.all()]
+    all_users = [i.to_dict() for i in Users.all()]
     return jsonify(all_users), 200
 
 @app.route("/api/user", methods=HTTP_METHODS)
@@ -83,68 +83,8 @@ def user() -> tuple[Response, int]:
             return jsonify({'error': str(e)}), 500
         
     return jsonify(user.to_dict()), 200
-    all_users  = [i.to_dict() for i in Users.all()]
-    return jsonify(all_users), 200
-
-@app.post("/api/user/create")
-@protected
-def create_user_route() -> tuple[Response, int]:
-    body: dict = request.json # type: ignore[assignment]
-    return create_user(body)
-
-def create_user(body: dict) -> tuple[Response, int]:
-    fullname: str = body["fullname"]
-    email: str = body["email"]
-    password: str = body["password"]
-    phone: str = body["phone"]
-    username: str = body["username"]
-    message: str
-    data: dict[str, str | dict]
-
-    if Users.get(email=email):
-        message = f"User exists with supplied email"
-        data = {
-            "error": message,
-            # "data": {},
-            # "status": "error",
-            # "reason": "email",
-        }
-        return jsonify(data), 406
-    if Users.get(username=username):
-        message = f"User exists with supplied username"
-        data = {
-            "error": message,
-            # "data": {},
-            # "status": "error",
-            # "reason": "username",
-        }
-        return jsonify(data), 406
-    if Users.get(phone=phone):
-        message = f"User exists with supplied Phone number"
-        data = {
-            "error": message,
-            # "data": {},
-            # "status": "error",
-            # "reason": "phone",
-        }
-        return jsonify(data), 406
-    otp: str = str(random.randint(1000, 9999))
-    token: str = generate_token(email, otp)
-    user: Users = Users(
-        fullname=fullname, email=email, username=username, phone=phone, otp_token=token
-    )
-    user.set_password(password)
-    user.save()
-    email_body: str = f"Here is your otp: {otp} Expires in 10 minutes"
-    message, code, status = send_mail("Verify Email", email, body=email_body)
-    if not status:
-        data = {"message": message, "user": user.to_dict(), "status": "email pending"}
-    else:
-        data = {"message": message, "user": user.to_dict(), "status": "success"}
-    return jsonify(data), code
 
 def update_user(user: Users,body: dict) -> tuple[Response, int]:
-    user_id: str = body["id"]
     message: str
     user_exist: Users | None
     data: dict[str, str | dict]

@@ -51,3 +51,9 @@ def create_bank(user: Users, body: dict[str,typing.Any]) -> tuple[Response, int]
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route("/api/bank/all")
+@protected
+def all_users() -> tuple[Response, int]:
+    """Get all users"""
+    all_banks  = [i.to_dict() for i in BankAccount.all()]
+    return jsonify(all_banks), 200

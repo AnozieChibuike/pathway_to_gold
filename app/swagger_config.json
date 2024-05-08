@@ -77,7 +77,7 @@
         }
       }
     },
-    "/api/user/create": {
+    "/api/signup": {
       "post": {
         "tags": ["User Management"],
         "summary": "Create a new user.",
