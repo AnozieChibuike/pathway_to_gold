@@ -21,6 +21,7 @@ app_api_key: str | None = os.getenv("x-api-key")
 @protected
 def _all_users() -> tuple[Response, int]:
     """Get all users"""
+    
     all_users = [i.to_dict() for i in Users.all()]
     return jsonify(all_users), 200
 

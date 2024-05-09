@@ -104,8 +104,9 @@ def create_user(body: dict) -> tuple[Response, int]:
     user.save()
     email_body: str = f"Here is your otp: {otp} Expires in 10 minutes"
     message, code, status = send_mail("Verify Email", email, body=email_body)
+    token: str = create_access_token(identity=user.id)
     if not status:
-        data = {"message": message, "user": user.to_dict(), "status": "email pending"}
+        data = {"message": message, "token": token, "status": "email pending"}
     else:
-        data = {"message": message, "user": user.to_dict(), "status": "success"}
+        data = {"message": message, "token": token, "status": "success"}
     return jsonify(data), code

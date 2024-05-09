@@ -51,6 +51,17 @@ class BaseModel(db.Model): # type: ignore[name-defined]
             attribute_name = column.name
             attribute_value = getattr(self, attribute_name)
             attributes[attribute_name] = attribute_value
+        for relationship in self.__mapper__.relationships:
+            related_table_name = relationship.key
+            related_objects = getattr(self, related_table_name)
+            
+            if related_objects is not None:
+                # If it's a one-to-one relationship, convert related object to dict
+                if relationship.uselist is False:
+                    attributes[related_table_name] = related_objects.to_dict()
+                # If it's a one-to-many relationship, convert list of related objects to list of dicts
+                else:
+                    attributes[related_table_name] = [obj.to_dict() for obj in related_objects]
         return attributes
     
     @classmethod
