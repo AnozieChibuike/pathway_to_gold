@@ -11,10 +11,10 @@ from flask_jwt_extended import get_jwt_identity, jwt_required
 base_url = os.getenv("BASE_URL")
 
 @app.post("/api/send-otp")
-@jwt_required()
 @protected
 def send_email() -> tuple[Response, int]:
-    user: Users = Users.get_or_404(id=get_jwt_identity())
+    email = request.json.get('email','')
+    user: Users = Users.get_or_404(email=email)
     try:
         otp: str = str(random.randint(1000, 9999))
         token = generate_token(user.email, otp)

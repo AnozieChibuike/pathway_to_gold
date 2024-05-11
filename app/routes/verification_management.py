@@ -10,12 +10,12 @@ from lib.utils.tokens import generate_token
 
 
 @app.post("/api/verify-otp")
-@jwt_required()
 @protected
 def verify_otp() -> tuple[Response, int]:
     try:
+        email = request.json.get("email", "")
         data: dict[str, str] = request.json  # type: ignore[assignment]
-        user: Users = Users.get_or_404(id=get_jwt_identity())
+        user: Users = Users.get_or_404(email=email)
         # email = user.email
         otp = str(data["otp"])
         int(otp)  # Used to raise error incase
