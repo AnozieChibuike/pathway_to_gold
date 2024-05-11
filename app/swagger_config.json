@@ -232,9 +232,10 @@
     },
     "VerifyOtpRequest": {
       "type": "object",
-      "required": ["otp"],
+      "required": ["otp","email"],
       "properties": {
-        "otp": { "type": "string" }
+        "otp": { "type": "string" },
+        "email": { "type": "string" }
       }
     },
     "GetRequest": {
