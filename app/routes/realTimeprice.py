@@ -25,14 +25,14 @@ def coins() -> tuple[Response, int]:
 def coins_prices() -> tuple[Response, int]:
     try:
         btc: dict = client.get_pair_price("btc")
-        pepe: dict = client.get_pair_price("pepe")
+        # pepe: dict = client.get_pair_price("pepe")
         eth: dict = client.get_pair_price("eth")
         sol: dict = client.get_pair_price("sol")
         doge: dict = client.get_pair_price("doge")
         xrp: dict = client.get_pair_price("xrp")
         response: dict[str, dict] = {
             "btc": btc,
-            "pepe": pepe,
+            # "pepe": pepe,
             "eth": eth,
             "sol": sol,
             "doge": doge,
