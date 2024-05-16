@@ -227,6 +227,7 @@
       "required": ["email"],
       "properties": {
         "subject": { "type": "string" },
+        "email": { "type": "string" },
         "template": { "type": "string" }
       }
     },
