@@ -3,7 +3,6 @@ from app import mail, app
 import os
 from dotenv import load_dotenv
 
-
 load_dotenv()
 
 DEFAULT_SENDER_MAIL: str | None = os.getenv("EMAIL_FROM")
@@ -24,7 +23,7 @@ def send_mail(
         msg.sender = (DEFAULT_SENDER_NAME,DEFAULT_SENDER_MAIL)
         if image:
             with app.open_resource(image) as f:
-                msg.attach(image, "image/png", f.read(), headers=[('Content-ID','<logo>')])
+                msg.attach(image, "image/png")
         mail.send(msg)
         return "Email sent", 200, True
     except Exception as e:

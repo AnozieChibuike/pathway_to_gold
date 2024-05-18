@@ -7,7 +7,8 @@ from lib.utils.mail import send_mail
 from lib.utils.protection import protected
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
 from lib.utils.tokens import generate_token
-
+from lib.templates import sign_up as su
+from lib.templates import otp as send_code
 
 @app.post("/api/verify-otp")
 @protected
@@ -102,8 +103,9 @@ def create_user(body: dict) -> tuple[Response, int]:
     )
     user.set_password(password)
     user.save()
-    email_body: str = f"Here is your otp: {otp} Expires in 10 minutes"
-    message, code, status = send_mail("Verify Email", email, body=email_body)
+    # email_body: str = f"Here is your otp: {otp} Expires in 10 minutes"
+    send_mail("Welcome", email, html=su(user.fullname), image='logo.png')
+    message, code, status = send_mail("Verify Email", email, html=send_code(code=otp), image='logo.png')
     token: str = create_access_token(identity=user.id)
     if not status:
         data = {"message": message, "token": token, "status": "email pending"}
