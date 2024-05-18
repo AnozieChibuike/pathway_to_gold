@@ -33,6 +33,3 @@ def verify_code(code: str, phone: str) -> tuple[str, bool]:
     except Exception as e:
         print(e)
         return 'Something went wrong or already verified or expired', False
-
-print(send_code_to_sms(phone='+2348126542441'))
-print(send_code_to_sms(phone='+2348126542441'))
