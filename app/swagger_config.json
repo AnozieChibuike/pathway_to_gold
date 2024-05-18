@@ -35,7 +35,7 @@
       "get": {
         "tags": ["User Management"],
         "summary": "Get user information",
-        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
+        "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
         "responses": {
           "200": { "description": "User information retrieved successfully." },
           "404": { "description": "User not found." },
@@ -45,7 +45,7 @@
       "put": {
         "tags": ["User Management"],
         "summary": "Update a user.",
-        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
+        "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
         "parameters": [
           {
             "in": "body",
@@ -66,7 +66,7 @@
       "delete": {
         "tags": ["User Management"],
         "summary": "Delete a user.",
-        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
+        "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
         "responses": {
           "201": { "description": "User deleted successfully." },
           "406": {
@@ -103,8 +103,8 @@
       "post": {
         "tags": ["Mail Management"],
         "summary": "Send an OTP to a user's email.",
-        "description": "This endpoint is protected and sends an OTP for email verification purposes.",
-        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
+        "description": "This endpoint is protected and sends an OTP for email verification purposes.In the body, channel can either be email or sms, if email is set as channel, specify the email if sms is set as channel, specify the phone",
+        "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
         "parameters": [
           {
             "in": "body",
@@ -123,8 +123,8 @@
     "/api/verify-otp": {
       "post": {
         "tags": ["Verification Management"],
-        "summary": "Verify the OTP sent to a user.",
-        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
+        "summary": "Verify the OTP sent to a user. In the body, channel can either be email or sms, if email is set as channel, specify the email if sms is set as channel, specify the phone",
+        "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
         "parameters": [
           {
             "in": "body",
@@ -168,7 +168,7 @@
       "post": {
         "tags": ["Bank Management"],
         "summary": "Attach a bank to a user",
-        "security": [{ "ApiKeyHeader": [] }, {"Bearer": []}],
+        "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
         "parameters": [
           {
             "in": "body",
@@ -224,19 +224,21 @@
   "definitions": {
     "SendOtpRequest": {
       "type": "object",
-      "required": ["email"],
+      "required": ["channel"],
       "properties": {
-        "subject": { "type": "string" },
+        "channel": { "type": "string" },
         "email": { "type": "string" },
-        "template": { "type": "string" }
+        "phone": { "type": "string" }
       }
     },
     "VerifyOtpRequest": {
       "type": "object",
-      "required": ["otp","email"],
+      "required": ["otp", "channel"],
       "properties": {
         "otp": { "type": "string" },
-        "email": { "type": "string" }
+        "email": { "type": "string" },
+        "phone": { "type": "string" },
+        "channel": { "type": "string" }
       }
     },
     "GetRequest": {
