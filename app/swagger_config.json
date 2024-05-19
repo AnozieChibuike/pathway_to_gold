@@ -173,7 +173,7 @@
             "in": "body",
             "name": "body",
             "required": true,
-            "schema": { "$ref": "#/definitions/VerifyOtpRequest" }
+            "schema": { "$ref": "#/definitions/VerifyOtpSmsRequest" }
           }
         ],
         "responses": {
