@@ -281,7 +281,7 @@
     },
     "VerifyOtpRequest": {
       "type": "object",
-      "required": ["otp", "channel"],
+      "required": ["otp", "email"],
       "properties": {
         "otp": { "type": "string" },
         "email": { "type": "string" }
