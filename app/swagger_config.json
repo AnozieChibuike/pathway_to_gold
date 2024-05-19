@@ -120,10 +120,53 @@
         }
       }
     },
+    "/api/send-otp-sms": {
+      "post": {
+        "tags": ["Mail Management"],
+        "summary": "Send an OTP to a user's email.",
+        "description": "This endpoint is protected and sends an OTP for phone verification purposes.",
+        "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/SendOtpSmsRequest" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OTP sent successfully." },
+          "400": { "description": "Missing required data in body: email." },
+          "401": { "description": "Unauthorized." }
+        }
+      }
+    },
     "/api/verify-otp": {
       "post": {
         "tags": ["Verification Management"],
         "summary": "Verify the OTP sent to a user. In the body, channel can either be email or sms, if email is set as channel, specify the email if sms is set as channel, specify the phone",
+        "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/VerifyOtpRequest" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OTP verification successful." },
+          "400": {
+            "description": "Invalid request format or missing required fields."
+          },
+          "401": { "description": "Unauthorized." }
+        }
+      }
+    },
+    "/api/verify-otp-sms": {
+      "post": {
+        "tags": ["Verification Management"],
+        "summary": "Verify the OTP sent to a user by sms.",
         "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
         "parameters": [
           {
@@ -224,10 +267,15 @@
   "definitions": {
     "SendOtpRequest": {
       "type": "object",
-      "required": ["channel"],
+      "required": ["email"],
       "properties": {
-        "channel": { "type": "string" },
-        "email": { "type": "string" },
+        "email": { "type": "string" }
+      }
+    },
+    "SendOtpSmsRequest": {
+      "type": "object",
+      "required": ["phone"],
+      "properties": {
         "phone": { "type": "string" }
       }
     },
@@ -236,9 +284,15 @@
       "required": ["otp", "channel"],
       "properties": {
         "otp": { "type": "string" },
-        "email": { "type": "string" },
-        "phone": { "type": "string" },
-        "channel": { "type": "string" }
+        "email": { "type": "string" }
+      }
+    },
+    "VerifyOtpSmsRequest": {
+      "type": "object",
+      "required": ["otp","phone"],
+      "properties": {
+        "otp": { "type": "string" },
+        "phone": { "type": "string" }
       }
     },
     "GetRequest": {

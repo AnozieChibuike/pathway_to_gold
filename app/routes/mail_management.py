@@ -38,6 +38,8 @@ def send_email() -> tuple[Response, int]:
 @protected
 def send_phone() -> tuple[Response, int]:
     phone = request.json.get('phone','')
+    if not phone:
+        return jsonify(error='Specify <phone> in json'), 403
     _ = Users.get_or_404(phone=phone)
     message, status = send_code_to_sms(phone=phone)
     if not status:
