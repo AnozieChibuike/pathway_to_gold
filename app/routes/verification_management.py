@@ -14,44 +14,43 @@ from lib.templates import otp as send_code
 @app.post("/api/verify-otp")
 @protected
 def verify_otp() -> tuple[Response, int]:
-    channel = request.json.get('channel')
     data: dict[str, str] = request.json  # type: ignore[assignment]
-    if channel.lower() == 'email':
-        try:
-            email = request.json.get("email", "")
-            user: Users = Users.get_or_404(email=email)
-            # email = user.email
-            otp = str(data["otp"])
-            int(otp)  # Used to raise error incase
-            message, status, code = user.verify_otp(otp)
-            if not status:
-                return jsonify({"error": message}), code
-            return jsonify({"message": message, "status": status}), code
-        except KeyError as e:
-            return jsonify({"error": str(e)}), 400
-        except ValueError as e:
-            return jsonify({"error": "Otp should all be numbers"}), 400
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-    elif channel.lower() == 'sms':
-        try:
-            otp = data['otp']
-            int(otp)
-            phone = data['phone']
-            Users.get_or_404(phone=phone)
-            message, status = verify_code(otp, phone)
-            if not status:
-                return jsonify(error=message), 400
-            return jsonify(message=message), 200
-        except KeyError as e:
-            return jsonify({"error": str(e)}), 400
-        except ValueError as e:
-            return jsonify({"error": "Otp should all be numbers"}), 400
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-    else:
-        return jsonify(error='You did not specify a channel to send the otp'), 403
 
+    try:
+        email = request.json.get("email", "")
+        user: Users = Users.get_or_404(email=email)
+        # email = user.email
+        otp = str(data["otp"])
+        int(otp)  # Used to raise error incase
+        message, status, code = user.verify_otp(otp)
+        if not status:
+            return jsonify({"error": message}), code
+        return jsonify({"message": message, "status": status}), code
+    except KeyError as e:
+        return jsonify({"error": str(e)}), 400
+    except ValueError as e:
+        return jsonify({"error": "Otp should all be numbers"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+@app.post("/api/verify-otp-sms")
+@protected
+def verify_otp_sms() -> tuple[Response, int]:
+    data: dict[str, str] = request.json
+    try:
+        otp = data['otp']
+        int(otp)
+        phone = data['phone']
+        Users.get_or_404(phone=phone)
+        message, status = verify_code(otp, phone)
+        if not status:
+            return jsonify(error=message), 400
+        return jsonify(message=message), 200
+    except KeyError as e:
+        return jsonify({"error": str(e)}), 400
+    except ValueError as e:
+        return jsonify({"error": "Otp should all be numbers"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.post("/api/login")
 @protected

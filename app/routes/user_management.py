@@ -141,7 +141,7 @@ def update_user(user: Users,body: dict) -> tuple[Response, int]:
             return jsonify(data), 406
         user.pin = body["pin"]
     user.save()
-    return jsonify({"message": "User updated"}), 201
+    return jsonify(user.to_dict()), 201
 
 def delete_user(user: Users) -> tuple[Response, int]:
     user.delete()

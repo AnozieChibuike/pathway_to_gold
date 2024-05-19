@@ -15,33 +15,31 @@ base_url = os.getenv("BASE_URL")
 @app.post("/api/send-otp")
 @protected
 def send_email() -> tuple[Response, int]:
-    channel = request.json.get('channel', '')
-    if channel.lower() == 'email':
-        email = request.json.get('email','')
-        user: Users = Users.get_or_404(email=email)
-        try:
-            otp: str = str(random.randint(1000, 9999))
-            token = generate_token(user.email, otp)
-            user.otp_token = token 
-            user.save()
-        except Exception as e:
-            return jsonify({"error": str(e)}), 500
-        # subject: str = request.json.get("subject") or "OTP code"  # Email subject
-        # # template = data.get("template")  # email body
-        # email_body = "Here is your otp: " + otp + "\nExpires in 10 minutes"
-        
-        message, code, status = send_mail("OTP Request", email, html=send_code(code=otp), image='logo.png')
-        if not status:
-            data = {"message": message, "status": "pending"}    
-        else:
-            data = {"message": message, "status": "success"}
-        return jsonify(data), code
-    elif channel.lower() == 'sms':
-        phone = request.json.get('phone','')
-        Users.get_or_404(phone=phone)
-        message, status = send_code_to_sms(phone=phone)
-        if not status:
-            return jsonify(error=message), 400
-        return jsonify(message=message), 200
+    email = request.json.get('email','')
+    user: Users = Users.get_or_404(email=email)
+    try:
+        otp: str = str(random.randint(1000, 9999))
+        token = generate_token(user.email, otp)
+        user.otp_token = token 
+        user.save()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    # subject: str = request.json.get("subject") or "OTP code"  # Email subject
+    # # template = data.get("template")  # email body
+    # email_body = "Here is your otp: " + otp + "\nExpires in 10 minutes"
+    
+    message, code, status = send_mail("OTP Request", email, html=send_code(code=otp), image='logo.png')
+    if not status:
+        data = {"message": message, "status": "pending"}    
     else:
-        return jsonify(error='You did not specify a channel to send the otp'), 403
+        data = {"message": message, "status": "success"}
+    return jsonify(data), code    
+@app.post("/api/send-otp-sms")
+@protected
+def send_phone() -> tuple[Response, int]:
+    phone = request.json.get('phone','')
+    _ = Users.get_or_404(phone=phone)
+    message, status = send_code_to_sms(phone=phone)
+    if not status:
+        return jsonify(error=message), 400
+    return jsonify(message=message), 200
