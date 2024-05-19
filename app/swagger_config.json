@@ -123,7 +123,7 @@
     "/api/send-otp-sms": {
       "post": {
         "tags": ["Mail Management"],
-        "summary": "Send an OTP to a user's email.",
+        "summary": "Send an OTP to a user's phone.",
         "description": "This endpoint is protected and sends an OTP for phone verification purposes.",
         "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
         "parameters": [
