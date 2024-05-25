@@ -185,6 +185,42 @@
         }
       }
     },
+    "/api/verify-totp": {
+      "post": {
+        "tags": ["Verification Management"],
+        "summary": "Verify the TOTP from authenticator app.",
+        "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/VerifyTOTP" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "OTP verification successful." },
+          "400": {
+            "description": "Invalid request format or missing required fields."
+          },
+          "401": { "description": "Unauthorized." }
+        }
+      }
+    },
+    "/api/activate-totp": {
+      "post": {
+        "tags": ["Verification Management"],
+        "summary": "Activate TOTP 2fa, Convert return to image and scan  by auth app.",
+        "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
+        "responses": {
+          "200": { "description": "Example base64 encoded string to be converted to image" },
+          "400": {
+            "description": "Invalid request format or missing required fields."
+          },
+          "401": { "description": "Unauthorized." }
+        }
+      }
+    },
     "/api/login": {
       "post": {
         "tags": ["Verification Management"],
@@ -293,6 +329,13 @@
       "properties": {
         "otp": { "type": "string" },
         "phone": { "type": "string" }
+      }
+    },
+    "VerifyTOTP": {
+      "type": "object",
+      "required": ["otp"],
+      "properties": {
+        "otp": { "type": "string" }
       }
     },
     "GetRequest": {
