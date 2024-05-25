@@ -10,6 +10,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from lib.utils.tokens import generate_token
 from lib.templates import sign_up as su
 from lib.templates import otp as send_code
+from lib.utils.generate_qr import generate_qr, verify_totp_code
 
 @app.post("/api/verify-otp")
 @protected
@@ -132,3 +133,33 @@ def create_user(body: dict) -> tuple[Response, int]:
     else:
         data = {"message": message, "token": token, "status": "success"}
     return jsonify(data), code
+
+@app.post("/api/activate-totp")
+@jwt_required()
+@protected
+def activate_totp() -> tuple[Response, int]:
+    try:
+        user: Users = Users.get_or_404(id=get_jwt_identity())
+        qrbase = generate_qr(user)
+        return jsonify(body=qrbase), 200
+    except KeyError as e:
+        return jsonify({"error": f"Missing required parameter: {e}"}), 406
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.post("/api/verify-totp")
+@jwt_required()
+@protected
+def verify_totp() -> tuple[Response, int]:
+    data = request.json
+    try:
+        user: Users = Users.get_or_404(id=get_jwt_identity())
+        code = data['code']
+        message, status = verify_totp_code(code, user)
+        if not status:
+            return jsonify(error=message), 400
+        return jsonify(message=message), 200
+    except KeyError as e:
+        return jsonify({"error": f"Missing required parameter: {e}"}), 406
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500

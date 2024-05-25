@@ -5,6 +5,7 @@ import os
 from dotenv import load_dotenv
 from lib.utils.tokens import *
 from sqlalchemy.orm import Mapped
+import pyotp
 
 load_dotenv()
 
@@ -32,6 +33,7 @@ class Users(BaseModel):
     bank_accounts = db.relationship("BankAccount", backref="user", lazy=True, cascade='all, delete-orphan', passive_deletes=True)
     balance: Mapped[float] = db.Column(db.Float, default=0)
     otp_token: Mapped[str] = db.Column(db.String(126))
+    totp_secret: Mapped[str] = db.Column(db.String(126), default=pyotp.random_base32())
 
     def set_password(self, password: str) -> None:
         self.password_hash = generate_password_hash(password, method="pbkdf2:sha256")
