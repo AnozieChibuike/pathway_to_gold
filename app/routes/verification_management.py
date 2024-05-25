@@ -155,7 +155,7 @@ def verify_totp() -> tuple[Response, int]:
     try:
         user: Users = Users.get_or_404(id=get_jwt_identity())
         code = data['code']
-        message, status = verify_totp_code(code, user)
+        message, status = verify_totp_code(user, code)
         if not status:
             return jsonify(error=message), 400
         return jsonify(message=message), 200

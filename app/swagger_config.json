@@ -333,7 +333,7 @@
     },
     "VerifyTOTP": {
       "type": "object",
-      "required": ["otp"],
+      "required": ["code"],
       "properties": {
         "otp": { "type": "string" }
       }
