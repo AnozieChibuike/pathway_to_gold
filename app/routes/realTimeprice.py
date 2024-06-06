@@ -22,7 +22,7 @@ def coins() -> tuple[Response, int]:
 
 
 @app.get("/api/all-prices")
-def coins() -> tuple[Response, int]:
+def coinsAll() -> tuple[Response, int]:
     try:
         response: dict = client.get_all_prices()
         return jsonify({"body": response}), 200
