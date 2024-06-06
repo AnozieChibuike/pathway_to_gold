@@ -21,6 +21,14 @@ def coins() -> tuple[Response, int]:
         return jsonify({"error": str(e)}), 500
 
 
+@app.get("/api/all-prices")
+def coins() -> tuple[Response, int]:
+    try:
+        response: dict = client.get_all_prices()
+        return jsonify({"body": response}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.get("/api/landing-prices")
 def coins_prices() -> tuple[Response, int]:
     try:

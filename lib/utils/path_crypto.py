@@ -113,5 +113,16 @@ class Crypto:
             return response.json()
         else:
             return f"Error: {response.status_code}, Message: {response.text}"
+    def get_all_prices(self):
+        url = "https://www.okx.com/api/v5/market/tickers?instType=SPOT"
+        response = requests.get(url)
+        
+        if response.status_code == 200:
+            data = response.json()
+            usdt_pairs = [ticker for ticker in data['data'] if 'USDT' in ticker['instId']]
+            return sorted(usdt_pairs, key=lambda x: x['instId'])
+        else:
+            return None
+
 
 client: Crypto = Crypto()
