@@ -40,8 +40,16 @@ def send_phone() -> tuple[Response, int]:
     phone = request.json.get('phone','')
     if not phone:
         return jsonify(error='Specify <phone> in json'), 403
-    _ = Users.get_or_404(phone=phone)
-    message, status = send_code_to_sms(phone=phone)
-    if not status:
+    user = Users.get_or_404(phone=phone)
+    try:
+        otp: str = str(random.randint(1000, 9999))
+        token = generate_token(user.phone, otp)
+        user.otp_token = token 
+        user.save()
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    body = f'Here is you OTP :{otp}\nDo not share'
+    message, status_code = send_code_to_sms(phone,body)
+    if status_code != 200:
         return jsonify(error=message), 400
     return jsonify(message=message), 200

@@ -7,7 +7,7 @@ from lib.utils.mail import send_mail
 from lib.utils.protection import protected
 from lib.utils.sms import verify_code
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
-from lib.utils.tokens import generate_token
+from lib.utils.tokens import generate_token, verify_token
 from lib.templates import sign_up as su
 from lib.templates import otp as send_code
 from lib.utils.generate_qr import generate_qr, verify_totp_code
@@ -41,11 +41,18 @@ def verify_otp_sms() -> tuple[Response, int]:
         otp = data['otp']
         int(otp)
         phone = data['phone']
-        Users.get_or_404(phone=phone)
-        message, status = verify_code(otp, phone)
+        user = Users.get_or_404(phone=phone)
+        if not user.otp_token:
+            return "User has not requested OTP", 400
+        data, code, status = verify_token(user.otp_token)
         if not status:
-            return jsonify(error=message), 400
-        return jsonify(message=message), 200
+            return jsonify(error=data['reason']), code
+        payload = data["payload"]
+        if payload["otp"] != otp:
+            return jsonify(error="Invalid OTP"), 400
+        user.otp_token = ''
+        user.save()
+        return jsonify(message="OTP Verified"), 200
     except KeyError as e:
         return jsonify({"error": str(e)}), 400
     except ValueError as e:
@@ -151,7 +158,7 @@ def activate_totp() -> tuple[Response, int]:
 @jwt_required()
 @protected
 def verify_totp() -> tuple[Response, int]:
-    data = request.json
+    data: dict = request.json
     try:
         user: Users = Users.get_or_404(id=get_jwt_identity())
         code = data['code']

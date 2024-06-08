@@ -1,35 +1,41 @@
-from twilio.rest import Client
+import boto3
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-account_sid = os.getenv('TWILIO_SID')
-auth_token = os.getenv('TWILIO_TOKEN')
-service = os.getenv('TWILIO_SERVICE')
-if not account_sid and auth_token and service:
-    raise KeyError('Missing keys')
+aws_access_key_id = os.getenv('AWS_ACCESS_KEY')
+aws_secret_access_key = os.getenv('AWS_SECRET_KEY')
+region_name = os.getenv('AWS_REGION', 'eu-west-1')
+pinpoint_APP_ID = os.getenv('AWS_PINPOINT_APP_ID')
 
-client = Client(account_sid, auth_token)
+# Create an SNS client with specified region and credentials
+client = boto3.client(
+    'sns',
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key,
+    region_name=region_name
+)
 
-def send_code_to_sms(phone: str) -> tuple[str, bool]:
+def send_code_to_sms(phone_number: str, message: str, message_type: str = 'TRANSACTIONAL'):
     try:
-        verification = client.verify.v2.services(service).verifications.create(to=phone, channel='sms') # Phone must be a +country_codr
-        print(verification.__dict__)
-        return 'Otp Sent to' + phone,True
-    except Exception as e:
-        return "Somethng went wrong", False
+        response = client.publish(
+            PhoneNumber=phone_number,
+            Message=message,
+            MessageAttributes={
+                'AWS.SNS.SMS.SMSType': {
+                    'DataType': 'String',
+                    'StringValue': message_type.capitalize()
+                }
+            }
+        )
+        if response['ResponseMetadata']['HTTPStatusCode'] == 200:
+            return 'Message sent successfully', 200
+        else:
+            return f"Failed to send message: {response.get('StatusMessage','Error')}", response['HTTPStatusCode']
+    except Exception  as e:
+        return str(e), 500
     
-def verify_code(code: str, phone: str) -> tuple[str, bool]:
-    try:
-        verification_check = client.verify \
-                            .v2 \
-                            .services(service) \
-                            .verification_checks \
-                            .create(to=phone, code=code)
-        if not verification_check.__dict__['valid']:
-            return "Incorrect otp", False
-        return 'Verified', True
-    except Exception as e:
-        print(e)
-        return 'Something went wrong or already verified or expired', False
+def verify_code(phone: str, code: str):
+    ...
