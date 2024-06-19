@@ -30,7 +30,6 @@ class Crypto:
         else:
             return f"Error: {response.status_code}, Message: {response.text}"
         
-    
     def set_headers(self, timestamp: str = "", signature: str = "") -> dict[str,str]:
         headers = {
             'Content-Type': 'application/json',
@@ -123,6 +122,15 @@ class Crypto:
             return sorted(usdt_pairs, key=lambda x: x['instId'])
         else:
             return None
+
+    def createWallet(self):
+        method = 'POST'
+        request_path = f'/api/{self.api_version}/asset/deposit-address'
+        timestamp = self.get_server_time()
+        signature = self.create_signature(timestamp, method, request_path)
+
+        headers = self.set_headers(timestamp, signature)
+        response = requests.get(self.base_url + request_path, headers=headers)
 
 
 client: Crypto = Crypto()

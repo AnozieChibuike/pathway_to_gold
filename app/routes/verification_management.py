@@ -36,18 +36,18 @@ def verify_otp() -> tuple[Response, int]:
 @app.post("/api/verify-otp-sms")
 @protected
 def verify_otp_sms() -> tuple[Response, int]:
-    data: dict[str, str] = request.json
+    data: dict[str, str] | None = request.json
     try:
         otp = data['otp']
         int(otp)
         phone = data['phone']
         user = Users.get_or_404(phone=phone)
         if not user.otp_token:
-            return "User has not requested OTP", 400
+            return jsonify(error="User has not requested OTP"), 400
         data, code, status = verify_token(user.otp_token)
         if not status:
             return jsonify(error=data['reason']), code
-        payload = data["payload"]
+        payload: dict = data["payload"]
         if payload["otp"] != otp:
             return jsonify(error="Invalid OTP"), 400
         user.otp_token = ''
@@ -134,11 +134,11 @@ def create_user(body: dict) -> tuple[Response, int]:
     # email_body: str = f"Here is your otp: {otp} Expires in 10 minutes"
     send_mail("Welcome", email, html=su(user.fullname), image='logo.png')
     message, code, status = send_mail("Verify Email", email, html=send_code(code=otp), image='logo.png')
-    token: str = create_access_token(identity=user.id)
+    # token: str = create_access_token(identity=user.id)
     if not status:
-        data = {"message": message, "token": token, "status": "email pending"}
+        data = {"message": message, "body": user.to_dict(), "status": "email pending"}
     else:
-        data = {"message": message, "token": token, "status": "success"}
+        data = {"message": message, "body": user.to_dict(), "status": "success"}
     return jsonify(data), code
 
 @app.post("/api/activate-totp")
