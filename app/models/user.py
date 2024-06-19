@@ -28,6 +28,7 @@ class Users(BaseModel):
     password_hash: Mapped[str] = db.Column(db.String(1024))
     image_url: Mapped[str] = db.Column(db.String(500))
     email_verified: Mapped[bool] = db.Column(db.Boolean, default=False)
+    phone_verified: Mapped[bool] = db.Column(db.Boolean, default=False)
     account_verified: Mapped[bool] = db.Column(db.Boolean, default=False)
     pin: Mapped[str] = db.Column(db.String(4))
     bank_accounts = db.relationship("BankAccount", backref="user", lazy=True, cascade='all, delete-orphan', passive_deletes=True)

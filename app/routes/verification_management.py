@@ -50,6 +50,7 @@ def verify_otp_sms() -> tuple[Response, int]:
         payload: dict = data["payload"]
         if payload["otp"] != otp:
             return jsonify(error="Invalid OTP"), 400
+        user.phone_verified = True
         user.otp_token = ''
         user.save()
         return jsonify(message="OTP Verified"), 200
