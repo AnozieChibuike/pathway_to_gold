@@ -32,15 +32,16 @@
       }
     },
     "/api/user_exists": {
-      "get": {
+      "post": {
         "tags": ["User Management"],
         "summary": "User exists",
         "security": [{ "ApiKeyHeader": [] }],
         "parameters": [
           {
             "in": "body",
-            "name": "email",
-            "required": true
+            "name": "body",
+            "required": true,
+            "schema": { "$ref": "#/definitions/UserExists" }
           }
         ],
         "responses": {
@@ -402,6 +403,13 @@
         "username": { "type": "string" },
         "fullname": { "type": "string" },
         "password": { "type": "string" }
+      }
+    },
+    "UserExists": {
+      "type": "object",
+      "required": ["email"],
+      "properties": {
+        "email": { "type": "string" }
       }
     },
     "CreateBankRequest": {
