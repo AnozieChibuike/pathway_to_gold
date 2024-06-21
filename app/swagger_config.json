@@ -31,6 +31,25 @@
         }
       }
     },
+    "/api/user_exists": {
+      "get": {
+        "tags": ["User Management"],
+        "summary": "User exists",
+        "security": [{ "ApiKeyHeader": [] }],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "email",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": { "description": "User information retrieved successfully." },
+          "404": { "description": "User not found." },
+          "401": { "description": "Unauthorized." }
+        }
+      }
+    },
     "/api/user": {
       "get": {
         "tags": ["User Management"],
@@ -213,7 +232,9 @@
         "summary": "Activate TOTP 2fa, Convert return to image and scan  by auth app.",
         "security": [{ "ApiKeyHeader": [] }, { "Bearer": [] }],
         "responses": {
-          "200": { "description": "Example base64 encoded string to be converted to image" },
+          "200": {
+            "description": "Example base64 encoded string to be converted to image"
+          },
           "400": {
             "description": "Invalid request format or missing required fields."
           },
@@ -334,7 +355,7 @@
     },
     "VerifyOtpSmsRequest": {
       "type": "object",
-      "required": ["otp","phone"],
+      "required": ["otp", "phone"],
       "properties": {
         "otp": { "type": "string" },
         "phone": { "type": "string" }
