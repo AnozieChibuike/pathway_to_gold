@@ -167,3 +167,12 @@ def set_pin() -> tuple[Response, int]:
         return jsonify(data), 406
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@app.post('/api/user_exists')
+@protected
+def user_exists() -> tuple[Response, int]:
+    """Check user exists"""
+    user: Users = Users.get(email=request.json['email'])
+    if not user:
+        return jsonify(False), 404
+    return jsonify(True), 200
